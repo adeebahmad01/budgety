@@ -12,7 +12,12 @@ var budgetController = (function() {
       this.id = id;
       this.description = description;
       this.value = value;
-      this.percentage = -1;
+      if (data.totals.inc > 0) {
+        this.percentage = Math.round((this.value / data.totals.inc) * 100);
+      }
+      else {
+        this.percentage = -1;
+      }
     }
     calcPercentages(totalIncome) {
       if (totalIncome > 0) {
@@ -26,11 +31,13 @@ var budgetController = (function() {
       return this.percentage;
     }
   }
-  var Income = function(id, description, value) {
-    this.id = id;
-    this.description = description;
-    this.value = value;
-  };
+  class Income {
+    constructor(id, description, value) {
+      this.id = id;
+      this.description = description;
+      this.value = value;
+    }
+  }
   calculateTotal = function(type) {
     var sum = 0;
     data.allItems[type].forEach(function(cur) {
@@ -97,11 +104,13 @@ var budgetController = (function() {
     },
     calculatePercentages: function() {
       data.allItems.exp.forEach(function(cur) {
+        cur = new Expense(cur.id,cur.description,cur.value)
         cur.calcPercentages(data.totals.inc);
       });
     },
     getPercentages: function() {
       var allPercentages = data.allItems.exp.map(function(cur) {
+        cur = new Expense(cur.id,cur.description,cur.value)
         return cur.getPercentages();
       });
       return allPercentages;
@@ -306,7 +315,7 @@ var controller = (function(budgetCtrl, UICtrl) {
       newHtml = newHtml.replace(`%value%`, UICtrl.formatNumber(el.value, type))
       document.querySelector(element).insertAdjacentHTML('beforeend', newHtml);
       let dataTotals = budgetCtrl.getBudget();
-      UICtrl.displayBudget(dataTotals)
+      UICtrl.displayBudget(dataTotals);
     })
   }
   var setupEventListeners = function() {
